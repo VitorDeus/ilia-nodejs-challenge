@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  wallet-db:
+    image: postgres:15
+    container_name: wallet-db
+    environment:
+      POSTGRES_DB: ${WALLET_DB_NAME}
+      POSTGRES_USER: ${WALLET_DB_USER}
+      POSTGRES_PASSWORD: ${WALLET_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - wallet_data:/var/lib/postgresql/data
+
+  wallet:
+    build: ./services/wallet
+    container_name: wallet-service
+    environment:
+      PORT: ${WALLET_PORT}
+      DB_HOST: ${WALLET_DB_HOST}
+      DB_PORT: ${WALLET_DB_PORT}
+      DB_NAME: ${WALLET_DB_NAME}
+      DB_USER: ${WALLET_DB_USER}
+      DB_PASSWORD: ${WALLET_DB_PASSWORD}
+      JWT_SECRET: ${ILIACHALLENGE}
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX: 30
+    ports:
+      - "${WALLET_PORT}:3001"
+    depends_on:
+      - wallet-db
+
+volumes:
+  wallet_data:
