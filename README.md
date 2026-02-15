@@ -1,4 +1,4 @@
-# ília — Financial Wallet Platform
+# ilia - Financial Wallet Platform
 
 Two Node.js microservices that together form a basic financial wallet: **Wallet** (transactions, balance) and **Users** (auth, profile, wallet integration).
 
@@ -34,7 +34,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-All four containers (wallet-db, wallet, users-db, users) will start. Migrations run automatically on boot — no manual step needed.
+All four containers (wallet-db, wallet, users-db, users) will start. Migrations run automatically on boot - no manual step needed.
 
 ## Running Tests
 
@@ -108,7 +108,7 @@ curl -s http://localhost:3002/me/wallet-summary \
   -H "Authorization: Bearer $TOKEN" | jq
 ```
 
-This internally calls Wallet using a short-lived internal JWT — the client never touches internal endpoints directly.
+This internally calls Wallet using a short-lived internal JWT - the client never touches internal endpoints directly.
 
 ## Authentication Model
 
