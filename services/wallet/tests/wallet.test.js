@@ -1,13 +1,3 @@
-/**
- * Integration tests for the Wallet service.
- *
- * Uses an in-process Express app with a real PostgreSQL database.
- * Requires the wallet-db to be running (docker compose up wallet-db).
- *
- * Environment variables DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
- * and JWT_SECRET must be set (or defaults will be used).
- */
-
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const app = require('../src/app');
@@ -22,7 +12,6 @@ function makeToken(sub = 'user-1') {
 
 beforeAll(async () => {
   await migrate();
-  // Clean slate
   await pool.query('DELETE FROM transactions');
 });
 
@@ -30,8 +19,6 @@ afterAll(async () => {
   await pool.query('DELETE FROM transactions');
   await pool.end();
 });
-
-// ─── AUTH ───────────────────────────────────────────────────────────────────────
 
 describe('Authentication', () => {
   it('rejects requests without a token', async () => {
@@ -47,8 +34,6 @@ describe('Authentication', () => {
     expect(res.status).toBe(401);
   });
 });
-
-// ─── POST /transactions ────────────────────────────────────────────────────────
 
 describe('POST /transactions', () => {
   const token = makeToken('user-tx');
@@ -109,13 +94,10 @@ describe('POST /transactions', () => {
   });
 });
 
-// ─── IDEMPOTENCY ────────────────────────────────────────────────────────────────
-
 describe('Idempotency', () => {
   const token = makeToken('user-idem');
 
   it('returns the same transaction for duplicate Idempotency-Key', async () => {
-    // First: credit so balance exists
     await request(app)
       .post('/transactions')
       .set('Authorization', `Bearer ${token}`)
@@ -141,13 +123,10 @@ describe('Idempotency', () => {
   });
 });
 
-// ─── GET /transactions ─────────────────────────────────────────────────────────
-
 describe('GET /transactions', () => {
   const token = makeToken('user-list');
 
   beforeAll(async () => {
-    // Seed some data
     for (let i = 0; i < 5; i++) {
       await request(app)
         .post('/transactions')
@@ -176,17 +155,14 @@ describe('GET /transactions', () => {
   });
 });
 
-// ─── GET /balance ───────────────────────────────────────────────────────────────
-
 describe('GET /balance', () => {
   it('returns the derived balance', async () => {
     const token = makeToken('user-bal');
-    // Credit 3000
     await request(app)
       .post('/transactions')
       .set('Authorization', `Bearer ${token}`)
       .send({ type: 'credit', amount: 3000 });
-    // Debit 1000
+
     await request(app)
       .post('/transactions')
       .set('Authorization', `Bearer ${token}`)
@@ -201,8 +177,6 @@ describe('GET /balance', () => {
     expect(res.body.currency).toBe('USD');
   });
 });
-
-// ─── HEALTH ─────────────────────────────────────────────────────────────────────
 
 describe('GET /health', () => {
   it('returns ok without auth', async () => {

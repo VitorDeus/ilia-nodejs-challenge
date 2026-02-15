@@ -1,10 +1,6 @@
 const rateLimit = require('express-rate-limit');
 const config = require('../config');
 
-/**
- * Rate limiter keyed by JWT userId.
- * Falls back to IP when user is not yet authenticated.
- */
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
   max: config.rateLimit.max,

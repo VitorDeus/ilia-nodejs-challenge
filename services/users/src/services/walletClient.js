@@ -1,11 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
-/**
- * Lightweight HTTP client for the Wallet service.
- * Uses internal JWT (ILIACHALLENGE_INTERNAL) for service-to-service auth.
- */
-
 function createInternalToken(userId) {
   return jwt.sign(
     { sub: userId, aud: 'internal', iss: 'users-service', svc: 'users' },

@@ -1,10 +1,3 @@
-/**
- * Integration tests for the Users service.
- *
- * Requires users-db running (docker compose up users-db).
- * Set DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, JWT_SECRET.
- */
-
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const app = require('../src/app');
@@ -23,8 +16,6 @@ afterAll(async () => {
   await pool.end();
 });
 
-// ─── HEALTH ─────────────────────────────────────────────────────────────────────
-
 describe('GET /health', () => {
   it('returns ok without auth', async () => {
     const res = await request(app).get('/health');
@@ -32,8 +23,6 @@ describe('GET /health', () => {
     expect(res.body.status).toBe('ok');
   });
 });
-
-// ─── POST /auth/register ───────────────────────────────────────────────────────
 
 describe('POST /auth/register', () => {
   it('registers a new user and returns JWT', async () => {
@@ -46,7 +35,6 @@ describe('POST /auth/register', () => {
     expect(res.body.user.id).toBeDefined();
     expect(res.body.token).toBeDefined();
 
-    // Verify token decodes correctly
     const payload = jwt.verify(res.body.token, SECRET);
     expect(payload.sub).toBe(res.body.user.id);
   });
@@ -69,8 +57,6 @@ describe('POST /auth/register', () => {
     expect(res.body.error).toMatch(/Validation/i);
   });
 });
-
-// ─── POST /auth/login ──────────────────────────────────────────────────────────
 
 describe('POST /auth/login', () => {
   it('logs in with valid credentials', async () => {
@@ -100,8 +86,6 @@ describe('POST /auth/login', () => {
     expect(res.status).toBe(401);
   });
 });
-
-// ─── GET /me ────────────────────────────────────────────────────────────────────
 
 describe('GET /me', () => {
   let token;

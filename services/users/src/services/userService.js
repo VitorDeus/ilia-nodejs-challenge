@@ -6,7 +6,6 @@ const config = require('../config');
 const SALT_ROUNDS = 10;
 
 async function register({ name, email, password }) {
-  // Check duplicate
   const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
   if (existing.rows.length > 0) {
     const err = new Error('Email already registered');

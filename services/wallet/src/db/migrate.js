@@ -29,10 +29,8 @@ async function migrate() {
   console.log('[migrate] done');
 }
 
-// Allow running directly: node src/db/migrate.js
 if (require.main === module) {
   require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
-  // Re-create pool with env loaded
   const { Pool: P } = require('pg');
   const cfg = require('../config');
   const p = new P(cfg.db);

@@ -1,9 +1,3 @@
-/**
- * Tests for Wallet internal endpoints (/internal/*).
- *
- * Requires wallet-db running (docker compose up wallet-db).
- */
-
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const app = require('../src/app');
@@ -27,7 +21,6 @@ function makeInternalToken(sub = 'user-internal-test') {
 
 beforeAll(async () => {
   await migrate();
-  // Seed test data via external endpoint
   const token = makeExternalToken();
   await request(app)
     .post('/transactions')
