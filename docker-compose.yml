@@ -24,6 +24,7 @@ services:
       DB_USER: ${WALLET_DB_USER}
       DB_PASSWORD: ${WALLET_DB_PASSWORD}
       JWT_SECRET: ${ILIACHALLENGE}
+      INTERNAL_JWT_SECRET: ${ILIACHALLENGE_INTERNAL}
       RATE_LIMIT_WINDOW_MS: 60000
       RATE_LIMIT_MAX: 30
     ports:
@@ -31,5 +32,37 @@ services:
     depends_on:
       - wallet-db
 
+  users-db:
+    image: postgres:15
+    container_name: users-db
+    environment:
+      POSTGRES_DB: ${USERS_DB_NAME}
+      POSTGRES_USER: ${USERS_DB_USER}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+
+  users:
+    build: ./services/users
+    container_name: users-service
+    environment:
+      PORT: ${USERS_PORT}
+      DB_HOST: ${USERS_DB_HOST}
+      DB_PORT: ${USERS_DB_PORT}
+      DB_NAME: ${USERS_DB_NAME}
+      DB_USER: ${USERS_DB_USER}
+      DB_PASSWORD: ${USERS_DB_PASSWORD}
+      JWT_SECRET: ${ILIACHALLENGE}
+      INTERNAL_JWT_SECRET: ${ILIACHALLENGE_INTERNAL}
+      WALLET_BASE_URL: http://wallet:3001
+    ports:
+      - "${USERS_PORT}:3002"
+    depends_on:
+      - users-db
+      - wallet
+
 volumes:
   wallet_data:
+  users_data:
