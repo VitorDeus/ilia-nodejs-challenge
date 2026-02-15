@@ -100,14 +100,25 @@ curl -s -X POST http://localhost:3001/transactions \
   -d '{"type":"debit","amount":1500}' | jq
 ```
 
-### 5. Check balance
+### 5. Try a debit that exceeds the balance (expect 422)
+
+```bash
+curl -s -w "\n%{http_code}" -X POST http://localhost:3001/transactions \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"debit","amount":999999}' | jq
+```
+
+Expected: `422 Insufficient balance`.
+
+### 6. Check balance
 
 ```bash
 curl -s http://localhost:3001/balance \
   -H "Authorization: Bearer $TOKEN" | jq
 ```
 
-### 6. Wallet summary (via Users service)
+### 7. Wallet summary (via Users service)
 
 ```bash
 curl -s http://localhost:3002/me/wallet-summary \
@@ -125,6 +136,8 @@ This internally calls Wallet using a short-lived internal JWT - the client never
 
 External tokens are signed with HS256 and expire in 24h. Internal tokens are created per-request by the Users service, signed with a separate secret, and expire in 30 seconds.
 
+> **Env mapping:** the `.env` file defines `ILIACHALLENGE` / `ILIACHALLENGE_INTERNAL`. Docker Compose maps them to `JWT_SECRET` / `INTERNAL_JWT_SECRET`, which is what the application code reads in `config/index.js`.
+
 ## API Reference
 
 ### Wallet Service (`:3001`)
@@ -135,6 +148,8 @@ External tokens are signed with HS256 and expire in 24h. Internal tokens are cre
 | GET  | `/transactions` | External JWT | List transactions (paginated, filterable) |
 | GET  | `/balance` | External JWT | Current balance |
 | GET  | `/health` | None | Health check |
+
+> `/health` is the only unauthenticated route on this service. All other endpoints require a valid JWT.
 
 **Idempotency**: Send `Idempotency-Key` header on POST to prevent duplicate transactions.
 
@@ -149,6 +164,8 @@ External tokens are signed with HS256 and expire in 24h. Internal tokens are cre
 | GET  | `/me` | External JWT | Current user profile |
 | GET  | `/me/wallet-summary` | External JWT | Balance + recent transactions |
 | GET  | `/health` | None | Health check |
+
+> `/health` is the only unauthenticated route on this service. All other endpoints require a valid JWT.
 
 ## Bonus: Rate Limiting
 
