@@ -36,6 +36,12 @@ docker compose up --build
 
 All four containers (wallet-db, wallet, users-db, users) will start. Migrations run automatically on boot - no manual step needed.
 
+To stop the services and **remove database volumes** (useful when you want a clean slate):
+
+```bash
+docker compose down -v
+```
+
 ## Running Tests
 
 Tests require the databases to be running:
