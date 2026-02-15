@@ -12,6 +12,11 @@ services:
       - "5433:5432"
     volumes:
       - wallet_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${WALLET_DB_USER} -d ${WALLET_DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   wallet:
     build: ./services/wallet
@@ -30,7 +35,14 @@ services:
     ports:
       - "${WALLET_PORT}:3001"
     depends_on:
-      - wallet-db
+      wallet-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   users-db:
     image: postgres:15
@@ -43,6 +55,11 @@ services:
       - "5434:5432"
     volumes:
       - users_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USERS_DB_USER} -d ${USERS_DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   users:
     build: ./services/users
@@ -60,8 +77,16 @@ services:
     ports:
       - "${USERS_PORT}:3002"
     depends_on:
-      - users-db
-      - wallet
+      users-db:
+        condition: service_healthy
+      wallet:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3002/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
 volumes:
   wallet_data:
