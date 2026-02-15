@@ -26,6 +26,9 @@ Controlled via environment variables (set in `docker-compose.yml` or `.env`):
   ```
 - Standard `RateLimit-*` headers are included in responses (`RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`).
 
+### Internal Service Bypass
+Internal service-to-service calls (via `/internal/*` endpoints on the Wallet) are **not rate-limited**. These endpoints use a separate authentication mechanism (`ILIACHALLENGE_INTERNAL` JWT with `aud="internal"`) and are mounted on a different route prefix that does not include the rate limiting middleware. This ensures that the Users service can reliably aggregate wallet data (e.g., `GET /me/wallet-summary`) without being throttled, while external clients remain protected.
+
 ---
 
 ## Strategic Improvement Suggestion (NOT Implemented): Double-Entry Ledger
