@@ -1,15 +1,10 @@
 const pool = require('../db/pool');
 
-/**
- * Create a transaction with idempotency and negative-balance protection.
- * Uses a serializable transaction for debit safety.
- */
 async function createTransaction({ userId, type, amount, currency, description, idempotencyKey }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // --- Idempotency check ---
     if (idempotencyKey) {
       const dup = await client.query(
         'SELECT * FROM transactions WHERE user_id = $1 AND idempotency_key = $2',
@@ -21,7 +16,6 @@ async function createTransaction({ userId, type, amount, currency, description, 
       }
     }
 
-    // --- Debit balance guard ---
     if (type === 'debit') {
       const balRes = await client.query(
         `SELECT COALESCE(SUM(CASE WHEN type = 'credit' THEN amount ELSE -amount END), 0) AS balance
@@ -55,9 +49,6 @@ async function createTransaction({ userId, type, amount, currency, description, 
   }
 }
 
-/**
- * List transactions with pagination and optional filters.
- */
 async function listTransactions(userId, { limit = 20, offset = 0, type, startDate, endDate } = {}) {
   const conditions = ['user_id = $1'];
   const params = [userId];
@@ -89,9 +80,6 @@ async function listTransactions(userId, { limit = 20, offset = 0, type, startDat
   return { data: dataRes.rows.map(formatRow), total, limit, offset };
 }
 
-/**
- * Compute balance for a user (derived from transactions).
- */
 async function getBalance(userId) {
   const res = await pool.query(
     `SELECT
@@ -104,8 +92,6 @@ async function getBalance(userId) {
   const debits = parseInt(res.rows[0].total_debits, 10);
   return { userId, balance: credits - debits, currency: 'USD' };
 }
-
-// --- helpers ---
 
 function formatRow(row) {
   return {

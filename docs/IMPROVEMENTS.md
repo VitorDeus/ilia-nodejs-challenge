@@ -26,6 +26,9 @@ Controlled via environment variables (set in `docker-compose.yml` or `.env`):
   ```
 - Standard `RateLimit-*` headers are included in responses (`RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`).
 
+### Internal Service Bypass
+Internal service-to-service calls (via `/internal/*` endpoints on the Wallet) are **not rate-limited**. These endpoints use a separate authentication mechanism (`ILIACHALLENGE_INTERNAL` JWT with `aud="internal"`) and are mounted on a different route prefix that does not include the rate limiting middleware. This ensures that the Users service can reliably aggregate wallet data (e.g., `GET /me/wallet-summary`) without being throttled, while external clients remain protected.
+
 ---
 
 ## Strategic Improvement Suggestion (NOT Implemented): Double-Entry Ledger
@@ -35,7 +38,7 @@ In production fintech systems, a single-entry model (one `transactions` table wi
 
 - **Auditability**: Regulators and auditors expect every movement of funds to be traceable between accounts. A single-entry model makes reconciliation manual and error-prone.
 - **Multi-currency / multi-account**: When users can hold balances in multiple currencies or when the platform itself has accounts (fees, reserves, payouts), single-entry cannot express "where did the money go?".
-- **Consistency guarantees**: The fundamental accounting equation (Assets = Liabilities + Equity) becomes automatically enforceable — every ledger posting must balance to zero, making silent data corruption detectable.
+- **Consistency guarantees**: The fundamental accounting equation (Assets = Liabilities + Equity) becomes automatically enforceable - every ledger posting must balance to zero, making silent data corruption detectable.
 
 ### What Changes Conceptually
 Instead of one row per transaction, every financial event produces **at least two entries** (a posting) that net to zero:
@@ -58,7 +61,7 @@ Key concepts introduced:
    CREATE TABLE accounts (
      id UUID PRIMARY KEY,
      owner_id VARCHAR(255),
-     type VARCHAR(50),       -- 'asset', 'liability', 'equity', 'revenue', 'expense'
+     type VARCHAR(50),
      currency VARCHAR(10),
      created_at TIMESTAMPTZ DEFAULT NOW()
    );
@@ -76,7 +79,7 @@ Key concepts introduced:
      account_id UUID REFERENCES accounts(id),
      debit  INTEGER NOT NULL DEFAULT 0 CHECK (debit >= 0),
      credit INTEGER NOT NULL DEFAULT 0 CHECK (credit >= 0),
-     CHECK (debit = 0 OR credit = 0)  -- entry is either debit or credit
+     CHECK (debit = 0 OR credit = 0)
    );
    ```
 
@@ -93,6 +96,6 @@ Key concepts introduced:
 ### Trade-offs
 - **Complexity**: More tables, more application logic, and a steeper learning curve for developers unfamiliar with accounting.
 - **Performance**: More rows per financial event; mitigated with materialized balance caches and partitioning.
-- **Correctness**: Dramatically higher — the system becomes self-auditing by construction.
+- **Correctness**: Dramatically higher - the system becomes self-auditing by construction.
 
 > **Recommendation**: Adopt this pattern before launch if the product handles real money or if multi-account / multi-currency features are on the roadmap. The cost of retrofitting a ledger post-launch is significantly higher than building it from the start.
