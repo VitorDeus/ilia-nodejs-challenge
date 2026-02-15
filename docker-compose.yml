@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   wallet-db:
     image: postgres:15
