@@ -17,7 +17,7 @@ export type RegisterFormData = z.infer<typeof registerSchema>;
 
 export const transactionSchema = z.object({
   type: z.enum(["credit", "debit"]),
-  amount: z.coerce.number().positive("Amount must be positive"),
+  amount: z.number().positive("Amount must be positive"),
 });
 
 export type TransactionFormData = z.infer<typeof transactionSchema>;
