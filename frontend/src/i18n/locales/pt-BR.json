@@ -16,23 +16,23 @@
   },
   "dashboard": {
     "balance": "Saldo",
-    "transactions": "Transacoes",
-    "noTransactions": "Nenhuma transacao ainda",
+    "transactions": "Transações",
+    "noTransactions": "Nenhuma transação ainda",
     "failedBalance": "Falha ao carregar saldo",
-    "failedTransactions": "Falha ao carregar transacoes"
+    "failedTransactions": "Falha ao carregar transações"
   },
   "transaction": {
-    "title": "Nova Transacao",
+    "title": "Nova Transação",
     "type": "Tipo",
-    "credit": "Credito",
-    "debit": "Debito",
+    "credit": "Crédito",
+    "debit": "Débito",
     "amount": "Valor",
-    "create": "Criar Transacao",
+    "create": "Criar Transação",
     "creating": "Criando...",
-    "created": "Transacao criada"
+    "created": "Transação criada"
   },
   "validation": {
-    "invalidEmail": "E-mail invalido",
+    "invalidEmail": "E-mail inválido",
     "minChars": "Pelo menos {{count}} caracteres",
     "amountPositive": "O valor deve ser positivo"
   }

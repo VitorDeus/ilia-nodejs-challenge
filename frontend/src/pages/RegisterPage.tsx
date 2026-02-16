@@ -26,11 +26,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setError("");
     try {
-      await usersApi.post("/auth/register", data);
-      const res = await usersApi.post("/auth/login", {
-        email: data.email,
-        password: data.password,
-      });
+      const res = await usersApi.post("/auth/register", data);
       login(res.data.token);
       navigate("/app", { replace: true });
     } catch (err: unknown) {
