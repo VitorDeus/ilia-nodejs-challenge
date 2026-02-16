@@ -1,0 +1,29 @@
+{
+  "name": "users-service",
+  "version": "1.0.0",
+  "description": "Users microservice – ilia Node.js challenge",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/db/migrate.js",
+    "test": "cross-env DB_PORT=5434 jest --runInBand --forceExit --detectOpenHandles --verbose",
+    "test:coverage": "cross-env DB_PORT=5434 jest --runInBand --forceExit --detectOpenHandles --coverage"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^16.4.0",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.0",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}

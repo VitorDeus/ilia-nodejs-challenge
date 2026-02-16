@@ -1,89 +1,238 @@
-# ília - Code Challenge NodeJS
-**English**
-##### Before we start ⚠️
-**Please create a fork from this repository**
+# ilia - Financial Wallet Platform
 
-## The Challenge:
-One of the ília Digital verticals is Financial and to level your knowledge we will do a Basic Financial Application and for that we divided this Challenge in 2 Parts.
+Two Node.js microservices and a React SPA that together form a basic financial wallet: **Wallet** (transactions, balance), **Users** (auth, profile, wallet integration) and **Frontend** (web UI).
 
-The first part is mandatory, which is to create a Wallet microservice to store the users' transactions, the second part is optional (*for Seniors, it's mandatory*) which is to create a Users Microservice with integration between the two microservices (Wallet and Users), using internal communications between them, that can be done in any of the following strategies: gRPC, REST, Kafka or via Messaging Queues and this communication must have a different security of the external application (JWT, SSL, ...), **Development in javascript (Node) is required.**
+## Architecture
 
-![diagram](diagram.png)
+```
+Browser ──► Frontend :3000 ──(proxy)──► Users :3002 ──(internal JWT)──► Wallet :3001
+                                            │                                │
+                                        users-db (PG)                   wallet-db (PG)
+```
 
-### General Instructions:
-## Part 1 - Wallet Microservice
+| Service  | Port | Stack | Description |
+|----------|------|-------|-------------|
+| Frontend | 3000 | React 19, Vite, TailwindCSS | Auth pages, dashboard, transaction form |
+| Wallet   | 3001 | Node.js, Express, PostgreSQL | Transactions CRUD, balance, idempotency |
+| Users    | 3002 | Node.js, Express, PostgreSQL | Register, login, profile, wallet summary |
 
-This microservice must be a digital Wallet where the user transactions will be stored 
+## Prerequisites
 
-### The Application must have
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (v20+)
+- [Node.js](https://nodejs.org/) v18+ (only for running tests outside containers)
+- Git
 
-    - Project setup documentation (readme.md).
-    - Application and Database running on a container (Docker, ...).
-    - This Microservice must receive HTTP Request.
-    - Have a dedicated database (Postgres, MySQL, Mongo, DynamoDB, ...).
-    - JWT authentication on all routes (endpoints) the PrivateKey must be ILIACHALLENGE (passed by env var).
-    - Configure the Microservice port to 3001. 
-    - Gitflow applied with Code Review in each step, open a feature/branch, create at least one pull request and merge it with Main(master deprecated), this step is important to simulate a team work and not just a commit.
+## Quick Start
 
-## Part 2 - Microservice Users and Wallet Integration
+```bash
+# 1. Clone and enter the repo
+git clone <repo-url> && cd ilia-nodejs-challenge
 
-### The Application must have:
+# 2. Create your .env from the example
+cp .env.example .env
 
-    - Project setup documentation (readme.md).
-    - Application and Database running on a container (Docker, ...).
-    - This Microservice must receive HTTP Request.   
-    - Have a dedicated database(Postgres, MySQL, Mongo, DynamoDB...), you may use an Auth service like AWS Cognito.
-    - JWT authentication on all routes (endpoints) the PrivateKey must be ILIACHALLENGE (passed by env var).
-    - Set the Microservice port to 3002. 
-    - Gitflow applied with Code Review in each step, open a feature/branch, create at least one pull request and merge it with Main(master deprecated), this step is important to simulate a teamwork and not just a commit.
-    - Internal Communication Security (JWT, SSL, ...), if it is JWT the PrivateKey must be ILIACHALLENGE_INTERNAL (passed by env var).
-    - Communication between Microservices using any of the following: gRPC, REST, Kafka or via Messaging Queues (update your readme with the instructions to run if using a Docker/Container environment).
+# 3. Build and start all services
+docker compose up --build
+```
 
-## Part 3 - Frontend Implementation - Fullstack candidates only
+All five containers (frontend, wallet, users, wallet-db, users-db) will start. Migrations run automatically on boot - no manual step needed.
 
-In this challenge, you will build the frontend application for a FinTech Wallet platform, integrating with the backend microservices provided in the Node.js challenge.
+Open **http://localhost:3000** in your browser to use the app.
 
-The application must allow users to authenticate, view their wallet balance, list transactions, and create credit or debit operations. The goal is to evaluate your ability to design a modern, secure, and well-structured UI that consumes microservice APIs, handles authentication via JWT, and provides a solid user experience with proper loading, error, and empty states.
+To stop the services and **remove database volumes** (useful when you want a clean slate):
 
-You may implement the solution using React, Vue, or Angular, following the required stack for the position you're running for and best practices outlined in the challenge.
+```bash
+docker compose down -v
+```
 
-### Before you start ⚠️
+## Running Tests
 
-- **Create a separate folder for the Frontend project**
-- Frontend must be built in **Typescript**.  
-- The goal is to deliver a production-like UI that consumes the backend services:
-  - Wallet Service (port **3001**)
-  - Users Service (port **3002**, optional but mandatory for Senior)
+### Backend tests
 
-### Challenge Overview
+Backend tests require the databases to be running:
 
-You will build a **web application** that allows a user to:
+```bash
+# Start only the databases
+docker compose up -d wallet-db users-db
 
-- Authenticate (if Users service exists)
-- View wallet balance
-- List transactions
-- Create transactions (credit/debit)
-- Handle loading, empty, and error states properly
+# Wallet tests (18 tests)
+cd services/wallet
+npm install
+DB_PORT=5433 npx jest --forceExit
 
-### Design Guidelines
+# Users tests (12 tests)
+cd ../users
+npm install
+DB_PORT=5434 npx jest --forceExit
+```
 
-No visual prototype or UI mockups will be provided for this challenge on purpose. This is intentional so we can evaluate your product sense, design judgment, and ability to translate business requirements into a coherent user experience. You should focus on creating a clean, modern, and intuitive interface that prioritizes usability and clarity of financial information. Pay special attention to information hierarchy (for example, making balance visibility prominent), form usability and validation, transaction readability, and clear feedback for system states such as loading, success, and errors. Consistency in layout, spacing, typography, and component reuse is important, as well as responsiveness and accessibility basics. *We are not evaluating graphic design skills*, but rather your ability to craft a professional, production-ready UI that engineers and users would find reliable and easy to use.
+### Frontend tests
 
-Feel free to leverage on any opensource components library.
+```bash
+cd frontend
+npm install
+npm test
+```
 
-### Requirements 
-This frontend should reflect real-world practices:
-- secure JWT handling
-- clean UX flows
-- robust API integration
-- scalable component structure
-- test coverage where it matters
-- supports i18n
-- responsive design (supporting mobile browser)
+Runs 8 tests covering login, dashboard and transaction form using Vitest and React Testing Library.
 
-#### In the end, send us your fork repo updated. As soon as you finish, please let us know.
+## End-to-End Flow (curl)
 
-#### We are available to answer any questions.
+### 1. Register a user
 
+```bash
+curl -s -X POST http://localhost:3002/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Alice","email":"alice@test.com","password":"Str0ng!Pass"}' | jq
+```
 
-Happy coding! 🤓
+### 2. Login
+
+```bash
+curl -s -X POST http://localhost:3002/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@test.com","password":"Str0ng!Pass"}' | jq
+
+# Save the returned token:
+TOKEN="<paste token here>"
+```
+
+### 3. Create a credit transaction
+
+```bash
+curl -s -X POST http://localhost:3001/transactions \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"credit","amount":5000}' | jq
+```
+
+### 4. Create a debit transaction
+
+```bash
+curl -s -X POST http://localhost:3001/transactions \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"debit","amount":1500}' | jq
+```
+
+### 5. Try a debit that exceeds the balance (expect 422)
+
+```bash
+curl -s -w "\n%{http_code}" -X POST http://localhost:3001/transactions \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"debit","amount":999999}' | jq
+```
+
+Expected: `422 Insufficient balance`.
+
+### 6. Check balance
+
+```bash
+curl -s http://localhost:3001/balance \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+### 7. Wallet summary (via Users service)
+
+```bash
+curl -s http://localhost:3002/me/wallet-summary \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+This internally calls Wallet using a short-lived internal JWT - the client never touches internal endpoints directly.
+
+## Authentication Model
+
+| Type | Secret (env var) | Usage |
+|------|-------------------|-------|
+| External JWT | `ILIACHALLENGE` | Client-facing auth on both services |
+| Internal JWT | `ILIACHALLENGE_INTERNAL` | Service-to-service calls (Users → Wallet), `aud="internal"`, 30s TTL |
+
+External tokens are signed with HS256 and expire in 24h. Internal tokens are created per-request by the Users service, signed with a separate secret, and expire in 30 seconds.
+
+> **Env mapping:** the `.env` file defines `ILIACHALLENGE` / `ILIACHALLENGE_INTERNAL`. Docker Compose maps them to `JWT_SECRET` / `INTERNAL_JWT_SECRET`, which is what the application code reads in `config/index.js`.
+
+## API Reference
+
+### Wallet Service (`:3001`)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/transactions` | External JWT | Create credit/debit (rate-limited) |
+| GET  | `/transactions` | External JWT | List transactions (paginated, filterable) |
+| GET  | `/balance` | External JWT | Current balance |
+| GET  | `/health` | None | Health check |
+
+> `/health` is the only unauthenticated route on this service. All other endpoints require a valid JWT.
+
+**Idempotency**: Send `Idempotency-Key` header on POST to prevent duplicate transactions.
+
+**Query params** for `GET /transactions`: `limit`, `offset`, `type`, `startDate`, `endDate`.
+
+### Users Service (`:3002`)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/auth/register` | None | Register (name, email, password) |
+| POST | `/auth/login` | None | Login, returns JWT |
+| GET  | `/me` | External JWT | Current user profile |
+| GET  | `/me/wallet-summary` | External JWT | Balance + recent transactions |
+| GET  | `/health` | None | Health check |
+
+> `/health` is the only unauthenticated route on this service. All other endpoints require a valid JWT.
+
+## Bonus: Rate Limiting
+
+`POST /transactions` is rate-limited (default: 30 req/min per user). Configurable via:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RATE_LIMIT_WINDOW_MS` | 60000 | Window in ms |
+| `RATE_LIMIT_MAX` | 30 | Max requests per window |
+
+Internal routes (`/internal/*`) bypass rate limiting by design. See [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md) for details and a strategic suggestion for double-entry ledger.
+
+## Project Structure
+
+```
+├── docker-compose.yml
+├── .env.example
+├── docs/
+│   └── IMPROVEMENTS.md
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── i18n/
+│   │   ├── lib/
+│   │   ├── pages/
+│   │   └── test/
+│   ├── Dockerfile
+│   └── nginx.conf
+└── services/
+    ├── wallet/
+    │   ├── src/
+    │   │   ├── config/
+    │   │   ├── controllers/
+    │   │   ├── db/
+    │   │   ├── middlewares/
+    │   │   ├── routes/
+    │   │   ├── services/
+    │   │   ├── validators/
+    │   │   ├── app.js
+    │   │   └── server.js
+    │   └── tests/
+    └── users/
+        ├── src/
+        │   ├── config/
+        │   ├── controllers/
+        │   ├── db/
+        │   ├── middlewares/
+        │   ├── routes/
+        │   ├── services/
+        │   ├── validators/
+        │   ├── app.js
+        │   └── server.js
+        └── tests/
+```
