@@ -3,7 +3,7 @@ function errorHandler(err, _req, res, _next) {
   const message = err.expose ? err.message : 'Internal server error';
 
   if (status >= 500) {
-    console.error(`[error] ${status} – ${err.message}`);
+    console.error(`[error] ${status} –`, err);
   }
 
   res.status(status).json({ error: message });
