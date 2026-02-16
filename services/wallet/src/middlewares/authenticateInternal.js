@@ -19,7 +19,7 @@ function authenticateInternal(req, res, next) {
       sub: payload.sub,
     };
     next();
-  } catch (err) {
+  } catch (_err) {
     return res.status(401).json({ error: 'Invalid or expired internal token' });
   }
 }

@@ -1,11 +1,8 @@
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
 const app = require('../src/app');
 const pool = require('../src/db/pool');
 const migrate = require('../src/db/migrate');
 const walletClient = require('../src/services/walletClient');
-
-const SECRET = process.env.JWT_SECRET || 'change_me';
 
 let token;
 let userId;
