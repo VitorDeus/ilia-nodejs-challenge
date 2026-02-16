@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { walletApi } from "@/lib/axios";
@@ -12,6 +13,7 @@ import { Select } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function CreateTransactionForm() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
@@ -33,7 +35,7 @@ export default function CreateTransactionForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["balance"] });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      setFeedback({ type: "success", msg: "Transaction created" });
+      setFeedback({ type: "success", msg: t("transaction.created") });
       reset();
     },
     onError: (err: unknown) => {
@@ -47,7 +49,7 @@ export default function CreateTransactionForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>New Transaction</CardTitle>
+        <CardTitle>{t("transaction.title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
@@ -57,17 +59,17 @@ export default function CreateTransactionForm() {
             </Alert>
           )}
           <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
+            <Label htmlFor="type">{t("transaction.type")}</Label>
             <Select id="type" data-testid="tx-type" {...register("type")}>
-              <option value="credit">Credit</option>
-              <option value="debit">Debit</option>
+              <option value="credit">{t("transaction.credit")}</option>
+              <option value="debit">{t("transaction.debit")}</option>
             </Select>
             {errors.type && (
               <p className="text-sm text-destructive">{errors.type.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
+            <Label htmlFor="amount">{t("transaction.amount")}</Label>
             <Input
               id="amount"
               type="number"
@@ -81,7 +83,7 @@ export default function CreateTransactionForm() {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={mutation.isPending}>
-            {mutation.isPending ? "Creating..." : "Create Transaction"}
+            {mutation.isPending ? t("transaction.creating") : t("transaction.create")}
           </Button>
         </form>
       </CardContent>

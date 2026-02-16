@@ -1,9 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { useBalance } from "@/hooks/useWallet";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function BalanceCard() {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useBalance();
 
   if (isLoading) {
@@ -22,7 +24,7 @@ export default function BalanceCard() {
   if (isError) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>Failed to load balance</AlertDescription>
+        <AlertDescription>{t("dashboard.failedBalance")}</AlertDescription>
       </Alert>
     );
   }
@@ -30,7 +32,7 @@ export default function BalanceCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Balance</CardTitle>
+        <CardTitle>{t("dashboard.balance")}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-4xl font-bold tabular-nums" data-testid="balance-value">

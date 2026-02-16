@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useTransactions } from "@/hooks/useWallet";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,6 +32,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
 }
 
 export default function TransactionList() {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useTransactions();
 
   if (isLoading) {
@@ -51,7 +53,7 @@ export default function TransactionList() {
   if (isError) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>Failed to load transactions</AlertDescription>
+        <AlertDescription>{t("dashboard.failedTransactions")}</AlertDescription>
       </Alert>
     );
   }
@@ -61,12 +63,12 @@ export default function TransactionList() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Transactions</CardTitle>
+        <CardTitle>{t("dashboard.transactions")}</CardTitle>
       </CardHeader>
       <CardContent>
         {txns.length === 0 ? (
           <p className="text-muted-foreground text-sm" data-testid="empty-transactions">
-            No transactions yet
+            {t("dashboard.noTransactions")}
           </p>
         ) : (
           <div data-testid="transaction-list">

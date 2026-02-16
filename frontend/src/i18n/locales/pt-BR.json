@@ -1,0 +1,39 @@
+{
+  "app": {
+    "title": "ilia Carteira",
+    "logout": "Sair"
+  },
+  "auth": {
+    "login": "Entrar",
+    "register": "Cadastrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "name": "Nome",
+    "signIn": "Entrar",
+    "signingIn": "Entrando...",
+    "createAccount": "Criar Conta",
+    "creatingAccount": "Criando conta..."
+  },
+  "dashboard": {
+    "balance": "Saldo",
+    "transactions": "Transacoes",
+    "noTransactions": "Nenhuma transacao ainda",
+    "failedBalance": "Falha ao carregar saldo",
+    "failedTransactions": "Falha ao carregar transacoes"
+  },
+  "transaction": {
+    "title": "Nova Transacao",
+    "type": "Tipo",
+    "credit": "Credito",
+    "debit": "Debito",
+    "amount": "Valor",
+    "create": "Criar Transacao",
+    "creating": "Criando...",
+    "created": "Transacao criada"
+  },
+  "validation": {
+    "invalidEmail": "E-mail invalido",
+    "minChars": "Pelo menos {{count}} caracteres",
+    "amountPositive": "O valor deve ser positivo"
+  }
+}

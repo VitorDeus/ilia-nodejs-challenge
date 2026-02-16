@@ -1,0 +1,39 @@
+{
+  "app": {
+    "title": "ilia Wallet",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating account..."
+  },
+  "dashboard": {
+    "balance": "Balance",
+    "transactions": "Transactions",
+    "noTransactions": "No transactions yet",
+    "failedBalance": "Failed to load balance",
+    "failedTransactions": "Failed to load transactions"
+  },
+  "transaction": {
+    "title": "New Transaction",
+    "type": "Type",
+    "credit": "Credit",
+    "debit": "Debit",
+    "amount": "Amount",
+    "create": "Create Transaction",
+    "creating": "Creating...",
+    "created": "Transaction created"
+  },
+  "validation": {
+    "invalidEmail": "Invalid email",
+    "minChars": "At least {{count}} characters",
+    "amountPositive": "Amount must be positive"
+  }
+}
