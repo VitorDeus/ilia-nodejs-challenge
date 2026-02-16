@@ -55,12 +55,12 @@ Backend tests require the databases to be running:
 # Start only the databases
 docker compose up -d wallet-db users-db
 
-# Wallet tests (16 tests)
+# Wallet tests (18 tests)
 cd services/wallet
 npm install
 DB_PORT=5433 npx jest --forceExit
 
-# Users tests (9 tests)
+# Users tests (12 tests)
 cd ../users
 npm install
 DB_PORT=5434 npx jest --forceExit
