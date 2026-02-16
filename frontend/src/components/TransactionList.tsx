@@ -20,7 +20,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
           {tx.type}
         </span>
         <span className="ml-2 text-sm text-muted-foreground">
-          {new Date(tx.created_at).toLocaleString()}
+          {new Date(tx.createdAt).toLocaleString()}
         </span>
       </div>
       <span className={`font-semibold tabular-nums ${isCredit ? "text-green-700" : "text-red-700"}`}>
@@ -58,7 +58,7 @@ export default function TransactionList() {
     );
   }
 
-  const txns = data?.transactions ?? [];
+  const txns = data?.data ?? [];
 
   return (
     <Card>

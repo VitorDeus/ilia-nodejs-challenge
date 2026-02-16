@@ -41,29 +41,35 @@ describe("DashboardPage", () => {
     mockGet.mockImplementation((url: string) => {
       if (url === "/balance") {
         return Promise.resolve({
-          data: { user_id: "u1", balance: 3500, currency: "USD" },
+          data: { userId: "u1", balance: 3500, currency: "USD" },
         });
       }
       if (url === "/transactions") {
         return Promise.resolve({
           data: {
-            transactions: [
+            data: [
               {
                 id: "t1",
-                user_id: "u1",
+                userId: "u1",
                 type: "credit",
                 amount: 5000,
-                created_at: "2026-01-01T00:00:00Z",
+                currency: "USD",
+                description: null,
+                createdAt: "2026-01-01T00:00:00Z",
               },
               {
                 id: "t2",
-                user_id: "u1",
+                userId: "u1",
                 type: "debit",
                 amount: 1500,
-                created_at: "2026-01-02T00:00:00Z",
+                currency: "USD",
+                description: null,
+                createdAt: "2026-01-02T00:00:00Z",
               },
             ],
             total: 2,
+            limit: 20,
+            offset: 0,
           },
         });
       }
@@ -87,11 +93,11 @@ describe("DashboardPage", () => {
     mockGet.mockImplementation((url: string) => {
       if (url === "/balance") {
         return Promise.resolve({
-          data: { user_id: "u1", balance: 0, currency: "USD" },
+          data: { userId: "u1", balance: 0, currency: "USD" },
         });
       }
       if (url === "/transactions") {
-        return Promise.resolve({ data: { transactions: [], total: 0 } });
+        return Promise.resolve({ data: { data: [], total: 0, limit: 20, offset: 0 } });
       }
       return Promise.reject(new Error("unknown"));
     });

@@ -10,14 +10,16 @@ export interface AuthResponse {
 
 export interface Transaction {
   id: string;
-  user_id: string;
+  userId: string;
   type: "credit" | "debit";
   amount: number;
-  created_at: string;
+  currency: string;
+  description: string | null;
+  createdAt: string;
 }
 
 export interface Balance {
-  user_id: string;
+  userId: string;
   balance: number;
   currency: string;
 }
@@ -28,8 +30,10 @@ export interface WalletSummary {
 }
 
 export interface TransactionListResponse {
-  transactions: Transaction[];
+  data: Transaction[];
   total: number;
+  limit: number;
+  offset: number;
 }
 
 export interface ApiError {
