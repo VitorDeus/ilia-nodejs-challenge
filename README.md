@@ -1,19 +1,20 @@
 # ilia - Financial Wallet Platform
 
-Two Node.js microservices that together form a basic financial wallet: **Wallet** (transactions, balance) and **Users** (auth, profile, wallet integration).
+Two Node.js microservices and a React SPA that together form a basic financial wallet: **Wallet** (transactions, balance), **Users** (auth, profile, wallet integration) and **Frontend** (web UI).
 
 ## Architecture
 
 ```
-Client ──► Users :3002 ──(internal JWT)──► Wallet :3001
-              │                                │
-          users-db (PG)                   wallet-db (PG)
+Browser ──► Frontend :3000 ──(proxy)──► Users :3002 ──(internal JWT)──► Wallet :3001
+                                            │                                │
+                                        users-db (PG)                   wallet-db (PG)
 ```
 
-| Service | Port | Database | Description |
-|---------|------|----------|-------------|
-| Wallet  | 3001 | wallet-db (host 5433) | Transactions CRUD, balance, idempotency |
-| Users   | 3002 | users-db (host 5434)  | Register, login, profile, wallet summary |
+| Service  | Port | Stack | Description |
+|----------|------|-------|-------------|
+| Frontend | 3000 | React 19, Vite, TailwindCSS | Auth pages, dashboard, transaction form |
+| Wallet   | 3001 | Node.js, Express, PostgreSQL | Transactions CRUD, balance, idempotency |
+| Users    | 3002 | Node.js, Express, PostgreSQL | Register, login, profile, wallet summary |
 
 ## Prerequisites
 
@@ -34,7 +35,9 @@ cp .env.example .env
 docker compose up --build
 ```
 
-All four containers (wallet-db, wallet, users-db, users) will start. Migrations run automatically on boot - no manual step needed.
+All five containers (frontend, wallet, users, wallet-db, users-db) will start. Migrations run automatically on boot - no manual step needed.
+
+Open **http://localhost:3000** in your browser to use the app.
 
 To stop the services and **remove database volumes** (useful when you want a clean slate):
 
@@ -44,7 +47,9 @@ docker compose down -v
 
 ## Running Tests
 
-Tests require the databases to be running:
+### Backend tests
+
+Backend tests require the databases to be running:
 
 ```bash
 # Start only the databases
@@ -60,6 +65,16 @@ cd ../users
 npm install
 DB_PORT=5434 npx jest --forceExit
 ```
+
+### Frontend tests
+
+```bash
+cd frontend
+npm install
+npm test
+```
+
+Runs 8 tests covering login, dashboard and transaction form using Vitest and React Testing Library.
 
 ## End-to-End Flow (curl)
 
@@ -185,18 +200,28 @@ Internal routes (`/internal/*`) bypass rate limiting by design. See [docs/IMPROV
 ├── .env.example
 ├── docs/
 │   └── IMPROVEMENTS.md
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── i18n/
+│   │   ├── lib/
+│   │   ├── pages/
+│   │   └── test/
+│   ├── Dockerfile
+│   └── nginx.conf
 └── services/
     ├── wallet/
     │   ├── src/
-    │   │   ├── config/        # Environment config
-    │   │   ├── controllers/   # Route handlers
-    │   │   ├── db/            # Pool + migrations
-    │   │   ├── middlewares/   # Auth, rate limiter, error handler
-    │   │   ├── routes/        # External + internal routes
-    │   │   ├── services/      # Business logic
-    │   │   ├── validators/    # Zod schemas
-    │   │   ├── app.js         # Express app
-    │   │   └── server.js      # Entry point
+    │   │   ├── config/
+    │   │   ├── controllers/
+    │   │   ├── db/
+    │   │   ├── middlewares/
+    │   │   ├── routes/
+    │   │   ├── services/
+    │   │   ├── validators/
+    │   │   ├── app.js
+    │   │   └── server.js
     │   └── tests/
     └── users/
         ├── src/
@@ -205,7 +230,7 @@ Internal routes (`/internal/*`) bypass rate limiting by design. See [docs/IMPROV
         │   ├── db/
         │   ├── middlewares/
         │   ├── routes/
-        │   ├── services/      # Auth logic + wallet HTTP client
+        │   ├── services/
         │   ├── validators/
         │   ├── app.js
         │   └── server.js
