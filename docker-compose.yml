@@ -1,0 +1,108 @@
+services:
+  wallet-db:
+    image: postgres:15
+    container_name: wallet-db
+    environment:
+      POSTGRES_DB: ${WALLET_DB_NAME}
+      POSTGRES_USER: ${WALLET_DB_USER}
+      POSTGRES_PASSWORD: ${WALLET_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - wallet_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${WALLET_DB_USER} -d ${WALLET_DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  wallet:
+    build: ./services/wallet
+    container_name: wallet-service
+    environment:
+      PORT: ${WALLET_PORT}
+      DB_HOST: ${WALLET_DB_HOST}
+      DB_PORT: ${WALLET_DB_PORT}
+      DB_NAME: ${WALLET_DB_NAME}
+      DB_USER: ${WALLET_DB_USER}
+      DB_PASSWORD: ${WALLET_DB_PASSWORD}
+      JWT_SECRET: ${ILIACHALLENGE}
+      INTERNAL_JWT_SECRET: ${ILIACHALLENGE_INTERNAL}
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX: 30
+    ports:
+      - "${WALLET_PORT}:3001"
+    depends_on:
+      wallet-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  users-db:
+    image: postgres:15
+    container_name: users-db
+    environment:
+      POSTGRES_DB: ${USERS_DB_NAME}
+      POSTGRES_USER: ${USERS_DB_USER}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USERS_DB_USER} -d ${USERS_DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  users:
+    build: ./services/users
+    container_name: users-service
+    environment:
+      PORT: ${USERS_PORT}
+      DB_HOST: ${USERS_DB_HOST}
+      DB_PORT: ${USERS_DB_PORT}
+      DB_NAME: ${USERS_DB_NAME}
+      DB_USER: ${USERS_DB_USER}
+      DB_PASSWORD: ${USERS_DB_PASSWORD}
+      JWT_SECRET: ${ILIACHALLENGE}
+      INTERNAL_JWT_SECRET: ${ILIACHALLENGE_INTERNAL}
+      WALLET_BASE_URL: http://wallet:3001
+    ports:
+      - "${USERS_PORT}:3002"
+    depends_on:
+      users-db:
+        condition: service_healthy
+      wallet:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3002/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      wallet:
+        condition: service_healthy
+      users:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  wallet_data:
+  users_data:
