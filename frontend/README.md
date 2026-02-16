@@ -1,54 +1,150 @@
-# React + TypeScript + Vite
+# Frontend - ilia Wallet UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript SPA for the ilia Financial Wallet platform.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Library | Purpose |
+|---------|---------|
+| Vite 6 | Build tooling, dev server with proxy |
+| React 19 | UI framework |
+| TypeScript | Type safety |
+| TailwindCSS 4 | Styling |
+| shadcn/ui components | Button, Card, Input, Label, Alert, Select |
+| react-router-dom v7 | Client-side routing |
+| TanStack Query v5 | Server state management |
+| react-hook-form + zod v4 | Form validation |
+| i18next | Internationalization (en, pt-BR) |
+| Vitest + React Testing Library | Unit/integration tests |
 
-## Expanding the ESLint configuration
+## Pages
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Route | Component | Auth |
+|-------|-----------|------|
+| `/login` | LoginPage | Public |
+| `/register` | RegisterPage | Public |
+| `/app` | DashboardPage | Protected |
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Quick Start (Vite dev)
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Opens at http://localhost:3000. The Vite proxy forwards API calls:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- `/api/users/*` -> `http://localhost:3002`
+- `/api/wallet/*` -> `http://localhost:3001`
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+Make sure the backend services are running (`docker compose up -d` from root).
+
+## Docker (full stack)
+
+From the repo root:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+The frontend runs on port 3000 behind nginx, which proxies API calls to the backend containers.
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VITE_USERS_BASE_URL` | `/api/users` | Users service base URL |
+| `VITE_WALLET_BASE_URL` | `/api/wallet` | Wallet service base URL |
+
+When running via Docker, the nginx reverse proxy handles routing to backends. The defaults (`/api/users`, `/api/wallet`) work out of the box.
+
+When running via Vite dev server, the same defaults work because Vite's proxy config rewrites them.
+
+If you point directly to backends (e.g., `http://localhost:3002`), CORS must be handled on the backend side.
+
+## API Routes Used
+
+### Users Service (`:3002`)
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/auth/register` | Register a new user |
+| POST | `/auth/login` | Login, returns JWT |
+
+### Wallet Service (`:3001`)
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/balance` | Fetch current balance |
+| GET | `/transactions` | List transactions (paginated) |
+| POST | `/transactions` | Create credit/debit transaction |
+
+## Auth Strategy
+
+- Token is stored in **memory** (React state) by default
+- Persisted in **sessionStorage** as fallback (survives page refresh within the tab)
+- **localStorage is intentionally avoided** to reduce XSS exposure surface
+- **Production hardening**: use httpOnly cookies set by the backend, eliminating client-side token storage entirely
+
+## Tests
+
+```bash
+npm test
+```
+
+Runs 8 tests across 3 suites:
+
+- LoginPage: validation, success flow, error handling
+- DashboardPage: balance + transactions rendering, empty state
+- CreateTransactionForm: validation, submit, error feedback
+
+## Project Structure
+
+```
+frontend/
+  src/
+    components/
+      ui/             # shadcn/ui primitives
+      AuthLayout.tsx
+      BalanceCard.tsx
+      CreateTransactionForm.tsx
+      DashboardLayout.tsx
+      LanguageSwitcher.tsx
+      ProtectedRoute.tsx
+      TransactionList.tsx
+    hooks/
+      useAuth.tsx
+      useWallet.ts
+    i18n/
+      locales/
+        en.json
+        pt-BR.json
+      index.ts
+    lib/
+      auth.ts
+      axios.ts
+      query-client.ts
+      schemas.ts
+      utils.ts
+    pages/
+      DashboardPage.tsx
+      LoginPage.tsx
+      RegisterPage.tsx
+    test/
+      setup.ts
+      LoginPage.test.tsx
+      DashboardPage.test.tsx
+      CreateTransaction.test.tsx
+    types/
+      index.ts
+    App.tsx
+    main.tsx
+    index.css
+  Dockerfile
+  nginx.conf
+  .env.example
+  vite.config.ts
 ```
